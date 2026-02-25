@@ -51,7 +51,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    @Cacheable(value = "productList")
+//    @Cacheable(value = "productList")
     public List<Product> getAllProducts() {
         return productRepository.findAll();
     }
