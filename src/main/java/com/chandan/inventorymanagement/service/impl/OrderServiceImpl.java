@@ -2,10 +2,12 @@ package com.chandan.inventorymanagement.service.impl;
 
 import com.chandan.inventorymanagement.dto.OrderItemRequest;
 import com.chandan.inventorymanagement.dto.OrderRequest;
+import com.chandan.inventorymanagement.dto.OrderWithItems;
 import com.chandan.inventorymanagement.entity.Order;
 import com.chandan.inventorymanagement.entity.OrderItem;
 import com.chandan.inventorymanagement.entity.Product;
 import com.chandan.inventorymanagement.exception.ResourceNotFoundException;
+import com.chandan.inventorymanagement.repository.OrderItemRepository;
 import com.chandan.inventorymanagement.repository.OrderRepository;
 import com.chandan.inventorymanagement.repository.ProductRepository;
 import com.chandan.inventorymanagement.service.OrderService;
@@ -22,13 +24,17 @@ import org.springframework.data.domain.Pageable;
 @Service
 public class OrderServiceImpl implements OrderService {
 
+    private final OrderItemRepository orderItemRepository;
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
 
     public OrderServiceImpl(OrderRepository orderRepository,
-                            ProductRepository productRepository) {
+                            ProductRepository productRepository,
+                            OrderItemRepository orderItemRepository) {
+
         this.orderRepository = orderRepository;
         this.productRepository = productRepository;
+        this.orderItemRepository = orderItemRepository;
     }
 
     @Override
@@ -63,20 +69,23 @@ public class OrderServiceImpl implements OrderService {
 
             // Create order item
             OrderItem orderItem = new OrderItem(
-                    product.getId(),
+                    product,
                     itemRequest.getQuantity(),
                     product.getPrice()
             );
-            orderItem.setOrder(order);
             orderItems.add(orderItem);
-
             totalAmount += product.getPrice() * itemRequest.getQuantity();
         }
 
-        order.setItems(orderItems);
         order.setTotalAmount(totalAmount);
+        orderRepository.save(order);
 
-        return orderRepository.save(order);
+        for(OrderItem i:orderItems){
+            i.setOrder(order);
+            orderItemRepository.save(i);
+        }
+
+        return order;
     }
 
     @Override
@@ -91,13 +100,13 @@ public class OrderServiceImpl implements OrderService {
             throw new RuntimeException("Only CREATED orders can be cancelled");
         }
 
-        // 🔁 Rollback stock
-        for (OrderItem item : order.getItems()) {
+        List<OrderItem> items = orderItemRepository.findByOrder(order);
+        for (OrderItem item : items) {
 
-            Product product = productRepository.findById(item.getProductId())
+            Product product = productRepository.findById(item.getProduct().getId())
                     .orElseThrow(() ->
                             new ResourceNotFoundException(
-                                    "Product not found: " + item.getProductId()));
+                                    "Product not found: " + item.getProduct().getId()));
 
             product.setStockQuantity(
                     product.getStockQuantity() + item.getQuantity());
@@ -110,10 +119,14 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Order getOrderById(Long orderId) {
-        return orderRepository.findById(orderId)
+    public OrderWithItems getOrderById(Long orderId) {
+        OrderWithItems orderWithItems = new OrderWithItems();
+        Order order = orderRepository.findById(orderId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Order not found: " + orderId));
+        orderWithItems.setOrder(order);
+        orderWithItems.setOrderItems(orderItemRepository.findByOrder(order));
+        return orderWithItems;
     }
 
     @Override

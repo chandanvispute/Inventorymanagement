@@ -59,14 +59,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @CacheEvict(value = {"products", "productList"}, allEntries = true)
     public Product updateProduct(Long id, Product product) {
-        Product existing = getProductById(id);
-
-        existing.setName(product.getName());
-        existing.setCategory(product.getCategory());
-        existing.setPrice(product.getPrice());
-        existing.setStockQuantity(product.getStockQuantity());
-
-        return productRepository.save(existing);
+        return productRepository.save(product);
     }
 
     @Override
@@ -96,4 +89,11 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.saveAll(products);
     }
 
+    @Override
+    public void addQuantity(long productId, int quantity){
+        Product product = productRepository.findById(productId).orElseThrow();
+        if(product.getStockQuantity()+quantity<0)throw new RuntimeException("Quantity can't be negative");
+        product.setStockQuantity(product.getStockQuantity()+quantity);
+        productRepository.save(product);
+    }
 }

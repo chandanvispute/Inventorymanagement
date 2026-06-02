@@ -13,6 +13,9 @@ public class RegisterRequest {
     @NotBlank
     private String password;
 
+    @NotBlank
+    private String otp;
+
     public RegisterRequest() {}
 
     public String getUsername() {
@@ -38,4 +41,8 @@ public class RegisterRequest {
     public void setRole(Role role){
         this.role=role;
     }
+
+    public String getOtp() { return otp; }
+
+    public void setOtp(String otp) { this.otp=otp; }
 }

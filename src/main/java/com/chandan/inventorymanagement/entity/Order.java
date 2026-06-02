@@ -18,8 +18,8 @@ public class Order {
 
     private String status;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
-    private List<OrderItem> items;
+//    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+//    private List<OrderItem> items;
 
     public Order() {}
 
@@ -60,11 +60,11 @@ public class Order {
         this.status = status;
     }
 
-    public List<OrderItem> getItems() {
-        return items;
-    }
-
-    public void setItems(List<OrderItem> items) {
-        this.items = items;
-    }
+//    public List<OrderItem> getItems() {
+//        return items;
+//    }
+//
+//    public void setItems(List<OrderItem> items) {
+//        this.items = items;
+//    }
 }

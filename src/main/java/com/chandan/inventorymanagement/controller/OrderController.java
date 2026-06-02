@@ -1,13 +1,17 @@
 package com.chandan.inventorymanagement.controller;
 
 import com.chandan.inventorymanagement.dto.OrderRequest;
+import com.chandan.inventorymanagement.dto.OrderWithItems;
 import com.chandan.inventorymanagement.entity.Order;
+import com.chandan.inventorymanagement.entity.OrderItem;
 import com.chandan.inventorymanagement.service.OrderService;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.domain.Sort;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/orders")
@@ -29,7 +33,7 @@ public class OrderController {
     }
 
     @GetMapping("/{orderId}")
-    public Order getOrderById(@PathVariable Long orderId) {
+    public OrderWithItems getOrderById(@PathVariable Long orderId) {
         return orderService.getOrderById(orderId);
     }
 

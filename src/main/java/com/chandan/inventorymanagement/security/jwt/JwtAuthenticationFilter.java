@@ -32,13 +32,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
+        System.out.println("asuonaoicinasiocn");
         String authHeader = request.getHeader("Authorization");
-
         // No JWT → continue
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
+
+        System.out.println("1");
 
         String token = authHeader.substring(7);
         String username;
@@ -46,9 +48,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             username = jwtUtil.extractUsername(token);
         } catch (Exception e) {
+            e.printStackTrace();
             filterChain.doFilter(request, response);
             return;
         }
+        System.out.println("Username : "+username);
 
         // If user not already authenticated
         if (username != null &&
@@ -67,6 +71,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             authentication.setDetails(
                     new WebAuthenticationDetailsSource().buildDetails(request)
             );
+
+            System.out.println("Username: " + userDetails.getUsername());
+
+            userDetails.getAuthorities()
+                    .forEach(a -> System.out.println("Authority: " + a.getAuthority()));
 
             SecurityContextHolder.getContext()
                     .setAuthentication(authentication);

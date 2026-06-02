@@ -5,7 +5,10 @@ import com.chandan.inventorymanagement.repository.ProductRepository;
 import com.chandan.inventorymanagement.service.ProductService;
 import com.chandan.inventorymanagement.service.S3Service;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,6 +31,7 @@ public class ProductController {
     }
 
     @PostMapping( consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public Product createProduct(
             @ModelAttribute @Valid Product product,
             @RequestPart(value = "image", required = false) MultipartFile image) {
@@ -42,17 +46,20 @@ public class ProductController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('ROLE_USER') or hasAuthority('ROLE_ADMIN')")
     public List<Product> getAllProducts() {
         return productService.getAllProducts();
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public Product updateProduct(@PathVariable Long id,
                                  @Valid @RequestBody Product product) {
         return productService.updateProduct(id, product);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public String deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
         return "Product deleted successfully";
@@ -75,5 +82,9 @@ public class ProductController {
         return productService.createProducts(products);
     }
 
-
+    @PatchMapping("/addQuantity")
+    public ResponseEntity<String> addQuantity(@RequestParam long productId, int quantity){
+        productService.addQuantity(productId,quantity);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }

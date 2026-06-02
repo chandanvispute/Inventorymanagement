@@ -23,4 +23,5 @@ public interface ProductService {
 
     Product createProduct(Product product, MultipartFile image);
 
+    void addQuantity(long productId, int quantity);
 }
